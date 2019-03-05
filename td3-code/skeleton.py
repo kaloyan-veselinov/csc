@@ -14,49 +14,49 @@ nbiterations = 10     # 10000 is currently recommended, should be adapted to the
 # Part of the script to edit               #
 ############################################
 
-# Hint : you can call decrypt(key,data) to decrypt data using key
 def crackencrypted(database):
     key = readfile("enckey")[0]
     crackeddb = []
-    for i in database:
-        # i[0] is the login, i[1] is the encrypted password
-        #...
-        crackeddb.append((i[0],i[1])) # second argument should contain cleartext password
+    for login, enc_password in database:
+        password = decrypt(key, enc_password)
+        crackeddb.append((login,password))
     return crackeddb
 
-# Hint : - genshahashes(passwords) returns all the hashes of passwords dictionary
-#        - getpassfromshahash(hashes, hash) returns the password which hashed as "hash" in hashes
+
 def cracksha(database):
     global nbpasswords
     passwords = getPassDict(nbpasswords) # passwords contains a dictionary of passwords
-    #...
+    shahashes = genshahashes(passwords)
+    dictionary = {h: p for h, p in shahashes}
     crackeddb = []
-    for i in database:
-        # i[0] is the login, i[1] is the hashed password
-        #...
-        crackeddb.append((i[0],i[1])) # second argument should contain cleartext password
+    for login, hashed_password in database:
+        password = dictionary.get(hashed_password) # getpassfromshahash(shahashes, hashed_password)
+        if password:
+            crackeddb.append((login, password)) # second argument should contain cleartext password
     return crackeddb
 
-# Hint : salthash(password, salt) return the salted hash of password
+
 def cracksaltedsha(database):
     global nbpasswords
     passwords = getPassDict(nbpasswords)
     crackeddb = []
-    for i in database:
-        # i[0] is the login, i[1] is the hashed password, i[2] is the salt
-        #...
-        crackeddb.append((i[0],i[1])) # second argument should contain cleartext password
+    for login, hashed_password, salt in database:
+        dictionary = {salthash(p, salt): p for p in passwords}
+        password = dictionary.get(hashed_password)
+        if password:
+            crackeddb.append((login,password)) # second argument should contain cleartext password
     return crackeddb
 
-# Hint : pbkdf2(password, salt, nbiterations) returns the pbkdf2 of password using salt and nbiterations
+
 def crackpbkdf2(database):
     global nbpasswords
     passwords = getPassDict(nbpasswords)
     crackeddb = []
-    for i in database:
-        # i[0] is the login, i[1] is the hashed password, i[2] is the salt, i[3] is the iteration count
-        #...
-        crackeddb.append((i[0],i[1])) # second argument should contain cleartext password
+    for login, hashed_password, salt, iteration_count in database:
+        dictionary = {pbkdf2(p, salt, iteration_count): p for p in passwords}
+        password = dictionary.get(hashed_password)
+        if password:
+            crackeddb.append((login,password)) # second argument should contain cleartext password
     return crackeddb
 
 
